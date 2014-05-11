@@ -15,7 +15,7 @@ In this post we only consider the case of asset management fees on invested capi
 
 The incentive fee ("carry") is typically stated as a percent of profits. Profits are normally defined as the gross profits of the investments after returning partnership expenses including the asset management fee.  Usually, a hurdle rate of return must be achieved before sharing begins.  So, a typical deal might be stated as "20% carry over an 8% pref with a 50% catchup".  This means that the partnership has to earn at least 8% return before the sponsor earns any carry.  Above an 8% return, the sponsor gets half the profit (i.e. the catchup is 50%) until the ratio of profit split is 20% to sponsor.  Thereafter, the profits are split 80% to the investors and 20% to the sponsor.  Although the catchup is negotiable, usually from 50% to 100%, this is the nearly universal structure of private equity sponsor compensation.
 
-Real estate deals have greater variation.  Many real estate have multiple layers, but no catchup. So, a real estate deal might be stated as "20 over 8, 30 over 12 and 50 over 20".  Stated this way, sponsor starts sharing 20% of profits once the investor earned an 8% return, switching to 30% of profits once the investor has earned a 12% return and 50% of profits once the investor has earned a 20% return.  There is no catchup in this structure, but between the 8% and 12% hurdle sponsor carry starts to drag on return and the gross return needs to be higher than 12% before the the next level of carry  kicks in.
+Real estate deals have greater variation.  Many real estate deals have multiple layers, but no catchup. So, a real estate deal might be stated as "20 over 8, 30 over 12 and 50 over 20".  Stated this way, sponsor starts sharing 20% of profits once the investor earned an 8% return, switching to 30% of profits once the investor has earned a 12% return and 50% of profits once the investor has earned a 20% return.  There is no catchup in this structure, but between the 8% and 12% hurdle sponsor carry starts to drag on return and the gross return needs to be higher than 12% before the the next level of carry  kicks in.
 
 ### Private Equity Example
 
@@ -205,24 +205,29 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
   lpcut=vector()
   typ=vector()
   nlayer=nrow(dmat)
+  if(am[1]>0) {
+    stack=c(stack,am[1])
+    lpcut=c(lpcut,0)
+    typ=c(typ,paste("Asset mgmt",0))
+  }
+  if (capital>0) {
+    stack=c(stack,capital)
+    lpcut=c(lpcut,1)
+    typ=c(typ,paste("Return of Capital"))
+  }
+  if(pref[1]>0) {
+    stack=c(stack,pref[1])
+    lpcut=c(lpcut,1)
+    typ=c(typ,paste("Preferred Return",1))
+  }
   for (j in 1:nlayer) {
-    if(am[j]>0 & j==1) {
-      stack=c(stack,am[j])
-      lpcut=c(lpcut,0)
-      typ=c(typ,paste("Asset mgmt",j-1))
-    }
-    if(j==1) {
-      stack=c(stack,pref[j])
-      lpcut=c(lpcut,1)
-      typ=c(typ,paste("Preferred Return",j))
-    } 
     if(am[j+1]>0) {
       stack=c(stack,am[j+1])
       lpcut=c(lpcut,0)
       typ=c(typ,paste("Asset Mgmt",j))
     }
     nextpref=pref[j+1]
-    lpsofar=sum(stack*lpcut)
+    lpsofar=sum(stack*lpcut)-capital
     lpshort=nextpref-lpsofar
     cu=catchup[j]
     cy=carry[j]
@@ -234,7 +239,7 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
       lpcut=c(lpcut,(1-cu))    
       typ=c(typ,paste("Catchup",j))
     }
-    lpsofar=sum(stack*lpcut)
+    lpsofar=sum(stack*lpcut)-capital
     lpshort=nextpref-lpsofar
     carrylayer=lpshort/(1-cy)
     if(carrylayer>0) {
@@ -244,15 +249,18 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
     }
   }
   ansmat=matrix(0,nrow=length(stack),ncol=length(ret))
-  rownames(ansmat)=typ
   for (i in 1:length(ret)) {
     ansmat[,i]=wf(stack,ret[i])[-(1+length(stack))]
   }
   ans=list()
   ans$lpshare=matrix(lpcut,nrow=length(stack),ncol=length(ret))*ansmat
+  rownames(ans$lpshare)=typ
   ans$gpshare=ansmat-ans$lpshare
-  ans$grossreturn=100*(capital+ret-invcost)/invcost
-  ans$netreturn=100*colSums(ans$lpshare)/capital
+  rownames(ans$gpshare)=typ
+  ans$grossreturn=100*(ret-invcost)/invcost
+  ans$netreturn=100*(colSums(ans$lpshare)-capital)/capital
+  ans$stack=stack
+  ans$lpcut=lpcut
   return(ans)
 }
 #given waterfall w in dollars and available cash c, distribute the cash to the waterfall
@@ -276,7 +284,7 @@ testans=function(ans) {
 peinv=100
 pecap=102
 dmat.pe=data.frame(am=0,pref=(.08*pecap),catchup=.5,carry=.2)
-ans.pe=waterfall(dmat.pe,ret=seq(1,30,.1),invcost=peinv,capital=pecap)
+ans.pe=waterfall(dmat.pe,ret=seq(100,130,.1),invcost=peinv,capital=pecap)
 ```
 
 Here is a plot that shows the share going to sponsor and investor.
@@ -309,7 +317,7 @@ Let's do the same for the real estate example.
 reinv=100
 recap=101
 dmat.re=data.frame(am=c(0,1,0),pref=c(.08,.12,.20)*recap,catchup=c(0,0,0),carry=c(.2,.3,.5))
-ans.re=waterfall(dmat.re,ret=seq(1,30,.1),invcost=reinv,capital=recap)
+ans.re=waterfall(dmat.re,ret=seq(100,130,.1),invcost=reinv,capital=recap)
 ```
 
 Here is a plot that shows the share going to sponsor and investor.

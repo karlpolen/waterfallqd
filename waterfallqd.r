@@ -1,4 +1,3 @@
-## waterfallqd
 waterfall=function(dmat,ret,capital=100,invcost=100) {
   am=dmat$am
   pref=dmat$pref
@@ -11,24 +10,29 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
   lpcut=vector()
   typ=vector()
   nlayer=nrow(dmat)
+  if(am[1]>0) {
+    stack=c(stack,am[1])
+    lpcut=c(lpcut,0)
+    typ=c(typ,paste("Asset mgmt",0))
+  }
+  if (capital>0) {
+    stack=c(stack,capital)
+    lpcut=c(lpcut,1)
+    typ=c(typ,paste("Return of Capital"))
+  }
+  if(pref[1]>0) {
+    stack=c(stack,pref[1])
+    lpcut=c(lpcut,1)
+    typ=c(typ,paste("Preferred Return",1))
+  }
   for (j in 1:nlayer) {
-    if(am[j]>0 & j==1) {
-      stack=c(stack,am[j])
-      lpcut=c(lpcut,0)
-      typ=c(typ,paste("Asset mgmt",j-1))
-    }
-    if(j==1) {
-      stack=c(stack,pref[j])
-      lpcut=c(lpcut,1)
-      typ=c(typ,paste("Preferred Return",j))
-    } 
     if(am[j+1]>0) {
       stack=c(stack,am[j+1])
       lpcut=c(lpcut,0)
       typ=c(typ,paste("Asset Mgmt",j))
     }
     nextpref=pref[j+1]
-    lpsofar=sum(stack*lpcut)
+    lpsofar=sum(stack*lpcut)-capital
     lpshort=nextpref-lpsofar
     cu=catchup[j]
     cy=carry[j]
@@ -40,7 +44,7 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
       lpcut=c(lpcut,(1-cu))    
       typ=c(typ,paste("Catchup",j))
     }
-    lpsofar=sum(stack*lpcut)
+    lpsofar=sum(stack*lpcut)-capital
     lpshort=nextpref-lpsofar
     carrylayer=lpshort/(1-cy)
     if(carrylayer>0) {
@@ -50,15 +54,18 @@ waterfall=function(dmat,ret,capital=100,invcost=100) {
     }
   }
   ansmat=matrix(0,nrow=length(stack),ncol=length(ret))
-  rownames(ansmat)=typ
   for (i in 1:length(ret)) {
     ansmat[,i]=wf(stack,ret[i])[-(1+length(stack))]
   }
   ans=list()
   ans$lpshare=matrix(lpcut,nrow=length(stack),ncol=length(ret))*ansmat
+  rownames(ans$lpshare)=typ
   ans$gpshare=ansmat-ans$lpshare
-  ans$grossreturn=100*(capital+ret-invcost)/invcost
-  ans$netreturn=100*colSums(ans$lpshare)/capital
+  rownames(ans$gpshare)=typ
+  ans$grossreturn=100*(ret-invcost)/invcost
+  ans$netreturn=100*(colSums(ans$lpshare)-capital)/capital
+  ans$stack=stack
+  ans$lpcut=lpcut
   return(ans)
 }
 #given waterfall w in dollars and available cash c, distribute the cash to the waterfall
