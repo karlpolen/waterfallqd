@@ -276,7 +276,7 @@ testans=function(ans) {
 peinv=100
 pecap=102
 dmat.pe=data.frame(am=0,pref=(.08*pecap),catchup=.5,carry=.2)
-ans.pe=waterfall(dmat.pe,ret=seq(1,30,.1),invcost=100,capital=102)
+ans.pe=waterfall(dmat.pe,ret=seq(1,30,.1),invcost=peinv,capital=pecap)
 ```
 
 Here is a plot that shows the share going to sponsor and investor.
