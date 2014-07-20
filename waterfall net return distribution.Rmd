@@ -1,0 +1,163 @@
+---
+title: "More on Private Equity General Partner Compensation"
+author: "Karl Polen"
+date: "Saturday, July 19, 2014"
+output: html_document
+---
+#### Abstract
+An illustration of how to calculate expected net returns to a private equity limited partner given an  assumed probability distribution of gross returns.  Files for this post are found at https://github.com/karlpolen/waterfallqd  
+
+#### Calculating private equity net returns
+
+In an earlier post, http://rpubs.com/kpolen/16871 , we talked about methods to calculate general partner compensation in a private equity partnership.  As a refresher, the following code uses a function `waterfall` discussed in the earlier post to calculate gross and net returns for a partnership with a 1.5% management and incentive of 20% over an 8% preferred return with an 80% catchup.  We plot the comparative returns and the fee paid to the sponsor as a function of gross return.
+
+```{r}
+source('waterfallqd.r')
+dmat.df=data.frame(am=1.5,pref=8,catchup=.8,carry=.2)
+ret=100+seq(-20,30,.1)
+wat=waterfall(dmat.df,ret)
+plot(wat$grossreturn,wat$grossreturn,col='red',type='l',main='Gross and Net Returns',
+     ylab='Return',xlab='Gross Return')
+lines(wat$grossreturn,wat$netreturn,col='blue')
+legend('topleft',legend=c('Gross Return','Net Return'),col=c('red','blue'),lwd=1)
+```
+
+#### Calculating net returns given a probability distribution assumption for gross returns
+
+We can also use the waterfall function to calculate net returns assuming a probability distribution of gross returns.  Suppose we think gross returns are normally distributed, with a mean of 15% and standard deviation of 15%.  How are the net returns distributed?
+
+In order to do this, we are going to create a set of gross returns that are distributed according to the above assumption.  The R language has native capability for this and we simply use the `dnorm` function to build the distribution.  We consider cases plus or minus 3 standard deviations from the mean. Note the use of `rep` to replicate more likely values to give them appropriate weight in the distribution.  Then you calculate the returns using the `waterfall` function.  
+
+```{r}
+mu=15
+sd=15
+ret.seq=seq(mu-3*sd,mu+3*sd,.1)
+ret.den=dnorm(ret.seq,mu,sd)
+ret.count=round(1000*ret.den)
+ret2=100+rep(ret.seq,ret.count)
+wat2=waterfall(dmat.df,ret2)
+```
+
+Now we are ready to plot a density function of the gross and net returns.
+
+```{r}
+with(wat2,plot(density(netreturn),col='blue',main='Return Density',xlab='Gross Return'))
+with(wat2,lines(density(grossreturn),col='red'))
+legend('topleft',legend=c('Gross Return','Net Return'),col=c('red','blue'),lwd=1)
+```
+
+Here we plot a cumulative density function.  Note the use of `ecdf` to calculate an empirical density on the net returns.
+
+```{r}
+with(wat2,plot(ecdf(netreturn),col='blue',pch=20,
+               main='Cumulative Density',xlab='Gross Return'))
+lines(ret.seq,pnorm(ret.seq,mu,sd),col='red',lwd=3)
+legend('topleft',legend=c('Gross Return','Net Return'),col=c('red','blue'),lwd=3)
+```
+
+Next we calculate the distribution of fees, i.e. the difference between gross and net returns.  Note the use of `from` in the `density` function to cut off values below the minimum fee, which is the asset management fee.  Contractually, the fees are never lower than that.  I've added a vertical dotted line at the mean fee.
+
+```{r}
+fee=wat2$grossreturn-wat2$netreturn
+mean.fee=mean(fee)
+plot(density(fee,from=min(fee)),col='purple',lwd=2,
+     main='Fee Drag Distribution\nGross Return minus Net Return',
+     xlim=c(1,14))
+abline(v=mean.fee,lty='dotted',col='purple')
+```
+
+#### An example evaluation of alternate deal structures
+
+Suppose a sponsor gives you an option where it proposes to cut the asset management fee in half provided you agree to pay 50% of profit above a 15% preferred return.  This type of tiered compensation is not typical in private equity, but common in real estate deals.  
+
+The following code calculates the watefall for this structure.  We'll call this "Deal 2" and the earlier structure "Deal 1".
+
+Here is the code to set up the waterfall for deal 2.
+
+```{r}
+dmat.3=data.frame(am=c(.75,0),pref=c(8,15),catchup=c(.8,0),carry=c(.2,.5))
+wat3=waterfall(dmat.3,ret)
+```
+
+Now let's plot a comparison of the two deals.
+
+```{r}
+plot (wat3$grossreturn,wat3$grossreturn,type='l',col='red',
+      main='Comparison of Alternate PE Deals',
+      xlab='Gross Return',ylab='Return')
+lines(wat$grossreturn,wat$netreturn,type='l',col='blue')
+lines(wat3$grossreturn,wat3$netreturn,type='l',col='green')
+legend('topleft',col=c('red','blue','green'),legend=c('Gross Return','Deal 1','Deal 2'),lwd=1)
+```
+
+Let's compare the two fees.
+
+```{r}
+fee1=wat$grossreturn-wat$netreturn
+fee2=wat3$grossreturn-wat3$netreturn
+plot(wat3$grossreturn,fee2,type='l',col='green',
+     main='Comparison of Fees',
+     xlab='Gross Return',ylab='Fee')
+lines(wat$grossreturn,fee1,type='l',col='blue')
+legend('topleft',legend=c('Deal 1','Deal 2'),col=c('blue','green'),lwd=1)
+```
+
+As you can see, you are giving up a fair amount of upside in exchange for a guaranteed reduction in asset management fee.  Is this a good deal?
+
+We will analyze this with the same gross return distribution assumptions as above, i.e. gross returns are normally distributed with a mean of 15% and standard deviation of 15%.  I've added dotted vertical lines to show the mean net returns of the two strategies.
+
+```{r}
+wat4=waterfall(dmat.3,ret2)
+with(wat4,plot(density(netreturn),col='green',main='Return Density',xlab='Return'))
+with(wat4,abline(v=mean(netreturn),lty='dotted',col='green'))
+with(wat2,lines(density(netreturn),col='blue'))
+with(wat2,abline(v=mean(netreturn),lty='dotted',col='blue'))
+with(wat4,lines(density(grossreturn),col='red'))
+legend('topleft',
+       legend=c('Gross Return','Net Return Deal 1', 'Net Return Deal 2'),
+       col=c('red','blue','green'),lwd=1)
+```
+
+You may be tempted to plot the mean returns and standard deviations.
+
+```{r}
+plot(mu,sd,col='red',pch=19,
+     main='Means and Standard Deviations',
+     xlab='Return',
+     ylab='Standard Deviation')
+points(mean(wat2$netreturn),sd(wat2$netreturn),col='blue',pch=19)
+points(mean(wat4$netreturn),sd(wat4$netreturn),col='green',pch=19)
+legend('topleft',
+       legend=c('Gross Return','Net Return Deal 1', 'Net Return Deal 2'),
+       col=c('red','blue','green'),pch=19)
+```
+
+But this is misleading, because the reduction in standard deviation in Deal 2 comes from the truncating the right side of the distribution.
+
+The following summary statistics show this.
+
+```{r message=FALSE,warning=FALSE}
+require(fBasics)
+statmat=basicStats(cbind(wat2$grossreturn,wat2$netreturn,wat4$netreturn))
+colnames(statmat)=c('Gross','Deal 1','Deal 2')
+round(statmat,2)
+```
+
+Another way to look at this is to consider the distribution of wealth generation, presented as TVPI.  Let's look at the distribution of TVPIs assuming an investment hold period of 5 years.
+
+```{r}
+wealthgross=(1+.01*wat2$grossreturn)^5
+wealthnet1=(1+.01*wat2$netreturn)^5
+wealthnet2=(1+.01*wat4$netreturn)^5
+plot(density(wealthnet1),col='blue',
+      ylim=c(0,.7),xlim=c(-1,8),
+      main='Comparison of TVPI distribution\nassuming 5 year hold',
+      xlab='TVPI')
+lines(density(wealthgross),col='red')
+lines(density(wealthnet2),col='green')
+statmat5=basicStats(cbind(wealthgross,wealthnet1,wealthnet2))
+colnames(statmat5)=c('Gross','Deal 1','Deal 2')
+round(statmat5,2)
+```
+
+You could also look at this is from an option pricing perspective.  Deal 2 can be thought of as selling a call on the assets at a strike price reflecting the second preferred return hurdle for a premium equal to the asset management fee reduction.  I will attempt this in a future post.
