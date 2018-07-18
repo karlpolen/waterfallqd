@@ -1,10 +1,5 @@
----
-title: "General Partner Compensation in Real Estate and Private Equity Partneships "
-author: "Karl Polen"
-output: 
-  html_document:
-    keep_md: TRUE
----
+# General Partner Compensation in Real Estate and Private Equity Partneships 
+Karl Polen  
 
 
 
@@ -29,23 +24,18 @@ Real estate deals have greater variation.  Many real estate deals have multiple 
 Let's revisit the typical private equity structure ("20 over 8 with a 50% catchup").  We will add a 2% asset management fee and consider the sharing of cash in the context of an investment with a hold period of exactly one year.  
 
 #### Level 0 -- the investment
-```{r echo=FALSE}
-inv=100
-am=2
-capital=inv+am
-pref=capital*.08
-```
+
 Invest $100 in an asset.  In addition, the investor has to pay the asset management fee of $2.  So, they have invested $102
 
 We now illustrate the distribution of cash with a sale of the investment
 
 #### level 1 -- return of capital
 
-The first $`r capital` goes to pay back the investor's capital -- $`r capital` cumulative cash, 2% gross return, 0% net return
+The first $102 goes to pay back the investor's capital -- $102 cumulative cash, 2% gross return, 0% net return
 
 #### level 2  -- pay pref
 
-The next `r pref` dollars goes to cover the "pref" of 8%.  $`r capital+pref` cumulative cash. `r round(100*(capital+pref-inv)/inv,1)`% gross return, 8% net return
+The next 8.16 dollars goes to cover the "pref" of 8%.  $110.16 cumulative cash. 10.2% gross return, 8% net return
 
 #### level 3 -- catchup
 
@@ -55,40 +45,31 @@ Here we have a simple algebra problem
 
 We are looking for a value of $x$ where
 
-$\frac{.5x}{`r pref`+x}=.2$
+$\frac{.5x}{8.16+x}=.2$
 
 Let's solve for x
 
-$x=`r .4*pref`+.4x$
+$x=3.264+.4x$
 
-$.6x=`r .4*pref`$
+$.6x=3.264$
 
-$x=\frac{`r .4*pref`}{.6} = `r round(.4*pref/.6,2)`$ 
+$x=\frac{3.264}{.6} = 5.44$ 
 
-```{r echo = FALSE}
-x=round(.4*pref/.6,2)
-```
 
-So, the next `r x` dollars are distributed 50/50.
 
-At this point, $`r capital+pref+x` has been distributed, of which $`r round(.5*x,2)` went to the sponsor as incentive fee.  The gross return is `r round(100*(-1+((capital+pref+x)/inv)),1)`% and the investor has received a net return of `r round(100*(-1+((capital+pref+(.5*x))/100)),1)`%.
+So, the next 5.44 dollars are distributed 50/50.
+
+At this point, $115.6 has been distributed, of which $2.72 went to the sponsor as incentive fee.  The gross return is 15.6% and the investor has received a net return of 12.9%.
 
 #### level 4 -- parri passu
 
 Remaining cash is distributed 80/20.  Suppose the asset is sold for $130.
 
-```{r echo=FALSE}
-price=130
-profit=price-inv
-grossroi=round(100*profit/inv,1)
-lpshare=.8*(price-capital)
-lproi=round(100*lpshare/capital,1)
-gpshare=.2*(price-capital)
-```
 
-The limited partner receives $`r capital` return of capital plus $`r  lpshare`.  The sponsor receives $`r gpshare` incentive fee in addition to the $`r am` it received as an asset management fee.
 
-The gross return on the investment is `r grossroi`%.  The net return to the investor is `r lproi`%.
+The limited partner receives $102 return of capital plus $22.4.  The sponsor receives $5.6 incentive fee in addition to the $2 it received as an asset management fee.
+
+The gross return on the investment is 30%.  The net return to the investor is 22%.
 
 ### Real Estate Example
 
@@ -96,79 +77,47 @@ Now let's consider the real estate example -- "20 over 8, 30 over 12 and 50 over
 
 #### Level 0 -- the investment
 
-```{r echo=FALSE}
-reinv=100
-ream=1
-reamdef=1
-capital=101
-pref1=.08*capital
-pref2=.12*capital
-pref3=.2*capital
-share1=.2
-share2=.3
-share3=.5
-ret1=round(100*(capital-reinv)/reinv,1)
-ret2=round(100*(capital+pref1-reinv)/reinv,1)
-netret2=8
-ret3a=round(100*(capital+pref1+reamdef-reinv)/reinv,1)
-netret3a=8
-x1=1.25*(pref2-pref1)
-ret3b=round(100*(capital+pref1+reamdef+x1-reinv)/reinv,1)
-lp3b=capital+pref1+(.8*x1)
-lp3bret=round(100*(lp3b-capital)/capital,1)
-gp3=round(.2*x1,2)
-x2=round((1/.7)*(pref3-pref2),2)
-ret4=round(100*(capital+pref1+reamdef+x1+x2-reinv)/reinv,1)
-lp4=round(lp3b+(.7*x2),2)
-lp4ret=round(100*(lp4-capital)/capital,1)
-gp4=round(gp3+.3*x2,2)
-price=130
-resid=price-lp4-gp4-reamdef
-lp5=round(lp4+.5*resid,2)
-gp5=round(gp4+.5*resid,2)
-ret5=round(100*(price-reinv)/reinv,2)
-lp5ret=round(100*(lp5-capital)/capital,2)
-```
 
-We invest $`r reinv` in an asset and pay the non-deferred portion of the asset management fee of $`r ream`.  The investor has invested $`r capital`.
+
+We invest $100 in an asset and pay the non-deferred portion of the asset management fee of $1.  The investor has invested $101.
 
 #### Level 1 -- return of capital
 
-The first $`r capital` goes to return of capital.  $`r capital` cumulative distributed, `r ret1`% gross return and 0% net return
+The first $101 goes to return of capital.  $101 cumulative distributed, 1% gross return and 0% net return
 
 #### Level 2 -- pay pref
 
-The next $`r pref1` goes to pay pref.  $`r capital+pref1` cumulative distributed, `r ret2`% gross return, `r netret2`% net return
+The next $8.08 goes to pay pref.  $109.08 cumulative distributed, 9.1% gross return, 8% net return
 
 #### Level 3a -- pay the deferred asset management fee
 
-The next $`r reamdef` goes to pay the deferred asset management fee.  $`r capital+pref1+reamdef` cumulative distributed, `r ret3a`% gross return and `r netret3a`% net return.
+The next $1 goes to pay the deferred asset management fee.  $110.08 cumulative distributed, 10.1% gross return and 8% net return.
 
 #### Level 3b -- 80/20 splits
 
-At this level profits are split 80/20 until the investor has received a 12% return.  The required incremental amount to distribute to the investor is $`r pref2-pref1`.  (Note: in a multiperiod example the spread between multi-tier pref layers expands over time with compounding.)
+At this level profits are split 80/20 until the investor has received a 12% return.  The required incremental amount to distribute to the investor is $4.04.  (Note: in a multiperiod example the spread between multi-tier pref layers expands over time with compounding.)
 
 So, we are looking for $x1$ where
 
-$.8x1=`r pref2-pref1`$
+$.8x1=4.04$
 
-$x1=1.25 \cdot `r pref2-pref1` = `r x1`$
+$x1=1.25 \cdot 4.04 = 5.05$
 
-So, we distribute the next $`r x1` in 80/20 ratio.  $`r capital+pref1+reamdef+x1` is the cumulative amount distributed of which the sponsor has received $`r gp3` in incentive fee, `r ret3b`% gross return, `r lp3bret`% net return.
+So, we distribute the next $5.05 in 80/20 ratio.  $115.13 is the cumulative amount distributed of which the sponsor has received $1.01 in incentive fee, 15.1% gross return, 12% net return.
 
 #### Level 4 -- 70/30 splits
 
-At this level profits are split 70/30 until the investor has received 20% return.  The required incremental amount to distribute to the investor in this layer is $`r pref3-pref2`.  So, we are looking for 
+At this level profits are split 70/30 until the investor has received 20% return.  The required incremental amount to distribute to the investor in this layer is $8.08.  So, we are looking for 
 
-$.7 \cdot x2 = `r pref3-pref2`$
+$.7 \cdot x2 = 8.08$
 
-$x2 = `r x2`$
+$x2 = 11.54$
 
-So, the next $`r x2` is distributed is split 70/30.  $`r capital+pref1+reamdef+x1+x2` is the cumulative amount distributed of which $`r gp4` is distributed to the sponsor as incentive fee, `r ret4`% gross return, and `r lp4ret`% net return.
+So, the next $11.54 is distributed is split 70/30.  $126.67 is the cumulative amount distributed of which $4.47 is distributed to the sponsor as incentive fee, 26.7% gross return, and 20% net return.
 
 #### Level 5 -- 50/50 splits
 
-Remaining profits are split 50/50.  Suppose we sell the asset for $130.  The remaining amount to distribute after prior levels is $`r resid` which is split 50/50.  The final outcome is that the sponsor has received $`r gp5` in incentive fee plus $`r ream+reamdef` in asset management fee.  The investor has received $`r lp5`.  The gross return is `r ret5`% and the net return to the investor is `r lp5ret`%.
+Remaining profits are split 50/50.  Suppose we sell the asset for $130.  The remaining amount to distribute after prior levels is $3.33 which is split 50/50.  The final outcome is that the sponsor has received $6.13 in incentive fee plus $2 in asset management fee.  The investor has received $122.86.  The gross return is 30% and the net return to the investor is 21.64%.
 
 ### Code to perform these calculations
 
@@ -199,7 +148,8 @@ The function returns a list of four elements.
 
 Here is the code.
 
-```{r}
+
+```r
 waterfall=function(dmat,ret,capital=100,invcost=100) {
   am=dmat$am
   pref=dmat$pref
@@ -287,7 +237,8 @@ testans=function(ans) {
 
 #### Replication of the private equity example
 
-```{r}
+
+```r
 peinv=100
 pecap=102
 dmat.pe=data.frame(am=0,pref=(.08*pecap),catchup=.5,carry=.2)
@@ -296,15 +247,19 @@ ans.pe=waterfall(dmat.pe,ret=seq(100,130,.1),invcost=peinv,capital=pecap)
 
 Here is a plot that shows the share going to sponsor and investor.
 
-```{r , fig.width=7, fig.height=5}
+
+```r
 plot(ans.pe$grossreturn,ans.pe$grossreturn,type='l',col='red',xlab='Gross Return',ylab='Return')
 lines(ans.pe$grossreturn,ans.pe$netreturn,type='l',col='blue')
 legend('topleft',legend=c('Gross Return','Net Return'),col=c('red','blue'),lwd=1)
 ```
 
+![](waterfallqd_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 This plot shows the share of profit going to the GP on the margin.
 
-```{r fig.width=7, fig.height=5}
+
+```r
 deltaprofit=diff(ans.pe$grossreturn)
 deltagp=diff(ans.pe$grossreturn-ans.pe$netreturn)
 gpcut=100*deltagp/deltaprofit
@@ -314,13 +269,16 @@ plot(ans.pe$grossreturn[-1],gpcut,
      ylab='Percent',type='l',col='blue')
 ```
 
+![](waterfallqd_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 As you can see, the share to the GP increases to 50% during the catchup phase.  It then drops to 20% for returns above the breakeven where the GP has 20% of the cumulative profits.
 
 #### Replication of Real Estate example
 
 Let's do the same for the real estate example.
 
-```{r}
+
+```r
 reinv=100
 recap=101
 dmat.re=data.frame(am=c(0,1,0),pref=c(.08,.12,.20)*recap,catchup=c(0,0,0),carry=c(.2,.3,.5))
@@ -329,15 +287,19 @@ ans.re=waterfall(dmat.re,ret=seq(100,130,.1),invcost=reinv,capital=recap)
 
 Here is a plot that shows the share going to sponsor and investor.
 
-```{r , fig.width=7, fig.height=5}
+
+```r
 plot(ans.re$grossreturn,ans.re$grossreturn,type='l',col='red',xlab='Gross Return',ylab='Return')
 lines(ans.re$grossreturn,ans.re$netreturn,type='l',col='blue')
 legend('topleft',legend=c('Gross Return','Net Return'),col=c('red','blue'),lwd=1)
 ```
 
+![](waterfallqd_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
 This plot shows the share of profit going to the GP on the margin.
 
-```{r fig.width=7, fig.height=5}
+
+```r
 deltaprofit=diff(ans.re$grossreturn)
 deltagp=diff(ans.re$grossreturn-ans.re$netreturn)
 gpcut=100*deltagp/deltaprofit
@@ -347,11 +309,14 @@ plot(ans.re$grossreturn[-1],gpcut,
      ylab='Percent',type='l',col='blue')
 ```
 
+![](waterfallqd_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 As you can see, the GP share spikes when they recover their share of the deferred management fee, then follows the stairstep of 20%, 30% and 50% shares of profit above the hurdle rates delivered to the investor.
 
 Finally, let's compare the net returns of the private equity and real estate examples.
 
-```{r fig.width=7, fig.height=5}
+
+```r
 peg=ans.pe$grossreturn
 reg=ans.re$grossreturn
 ## which gross returns are in both answers?
@@ -362,4 +327,6 @@ plot(peg[peind],ans.pe$netreturn[peind],type='l',col='red',ylab='Net Return',
 lines(peg[peind],ans.re$netreturn[reind],type='l',col='blue')
 legend('topleft',legend=c('Private Equity','Real Estate'),col=c('red','blue'),lwd=1)
 ```
+
+![](waterfallqd_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
